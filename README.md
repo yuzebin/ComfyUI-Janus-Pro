@@ -1,6 +1,9 @@
 # ComfyUI-Janus-Pro
 
+[English](README_EN.md) | 简体中文
+
 ComfyUI 的 Janus-Pro 节点，一个统一的多模态理解和生成框架。
+
 ![alt text](<workflow/ComfyUI Janus-Pro-workflow.png>)
 
 ## 安装方法
