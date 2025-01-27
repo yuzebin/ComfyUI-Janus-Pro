@@ -14,6 +14,26 @@ class JanusImageUnderstanding:
                     "multiline": True,
                     "default": "Describe this image in detail."
                 }),
+                "seed": ("INT", {
+                    "default": 666666666666666,
+                    "min": 0,
+                    "max": 0xffffffffffffffff
+                }),
+                "temperature": ("FLOAT", {
+                    "default": 0.1,
+                    "min": 0.0,
+                    "max": 1.0
+                }),
+                "top_p": ("FLOAT", {
+                    "default": 0.95,
+                    "min": 0.0,
+                    "max": 1.0
+                }),
+                "max_new_tokens": ("INT", {
+                    "default": 512,
+                    "min": 1,
+                    "max": 2048
+                }),
             },
         }
     
@@ -22,11 +42,15 @@ class JanusImageUnderstanding:
     FUNCTION = "analyze_image"
     CATEGORY = "Janus-Pro"
 
-    def analyze_image(self, model, processor, image, question):
+    def analyze_image(self, model, processor, image, question, seed, temperature, top_p, max_new_tokens):
         try:
             from janus.models import MultiModalityCausalLM
         except ImportError:
             raise ImportError("Please install Janus using 'pip install -r requirements.txt'")
+
+        # 设置随机种子
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
 
         # 打印初始图像信息
         # print(f"Initial image shape: {image.shape}")
@@ -73,11 +97,17 @@ class JanusImageUnderstanding:
             pad_token_id=processor.tokenizer.eos_token_id,
             bos_token_id=processor.tokenizer.bos_token_id,
             eos_token_id=processor.tokenizer.eos_token_id,
-            max_new_tokens=512,
-            do_sample=False,
+            max_new_tokens=max_new_tokens,
+            do_sample=True,
+            temperature=temperature,
+            top_p=top_p,
             use_cache=True,
         )
 
         answer = processor.tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)
         
-        return (answer,) 
+        return (answer,)
+
+    @classmethod
+    def IS_CHANGED(cls, seed, **kwargs):
+        return seed 

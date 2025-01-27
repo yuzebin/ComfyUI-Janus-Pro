@@ -13,10 +13,21 @@ class JanusImageGeneration:
                     "multiline": True,
                     "default": "A beautiful photo of"
                 }),
+                "seed": ("INT", {
+                    "default": 666666666666666,
+                    "min": 0,
+                    "max": 0xffffffffffffffff
+                }),
                 "batch_size": ("INT", {
                     "default": 1,
                     "min": 1,
                     "max": 16
+                }),
+                "cfg_weight": ("FLOAT", {
+                    "default": 5.0,
+                    "min": 1.0,
+                    "max": 10.0,
+                    "step": 0.5
                 }),
                 "temperature": ("FLOAT", {
                     "default": 1.0,
@@ -24,11 +35,10 @@ class JanusImageGeneration:
                     "max": 2.0,
                     "step": 0.1
                 }),
-                "cfg_weight": ("FLOAT", {
-                    "default": 5.0,
-                    "min": 1.0,
-                    "max": 20.0,
-                    "step": 0.5
+                "top_p": ("FLOAT", {
+                    "default": 0.95,
+                    "min": 0.0,
+                    "max": 1.0
                 }),
             },
         }
@@ -38,11 +48,15 @@ class JanusImageGeneration:
     FUNCTION = "generate_images"
     CATEGORY = "Janus-Pro"
 
-    def generate_images(self, model, processor, prompt, batch_size=1, temperature=1.0, cfg_weight=5.0):
+    def generate_images(self, model, processor, prompt, seed, batch_size=1, temperature=1.0, cfg_weight=5.0, top_p=0.95):
         try:
             from janus.models import MultiModalityCausalLM
         except ImportError:
             raise ImportError("Please install Janus using 'pip install -r requirements.txt'")
+
+        # 设置随机种子
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
 
         # 图像参数设置
         image_token_num = 576  # 24x24 patches
@@ -143,4 +157,8 @@ class JanusImageGeneration:
         # 确保格式正确
         assert images.ndim == 4 and images.shape[-1] == 3, f"Unexpected shape: {images.shape}"
         
-        return (images,) 
+        return (images,)
+
+    @classmethod
+    def IS_CHANGED(cls, seed, **kwargs):
+        return seed 
