@@ -9,7 +9,6 @@ class JanusModelLoader:
         return {
             "required": {
                 "model_name": (["deepseek-ai/Janus-Pro-1B", "deepseek-ai/Janus-Pro-7B"],),
-                "local_model": ("BOOLEAN", {"default": True}),
             },
         }
     
@@ -18,7 +17,7 @@ class JanusModelLoader:
     FUNCTION = "load_model"
     CATEGORY = "Janus-Pro"
 
-    def load_model(self, model_name, local_model=True):
+    def load_model(self, model_name):
         try:
             from janus.models import MultiModalityCausalLM, VLChatProcessor
             from transformers import AutoModelForCausalLM
@@ -34,24 +33,20 @@ class JanusModelLoader:
         except RuntimeError:
             dtype = torch.float16
 
-        if local_model:
-            # 获取ComfyUI根目录
-            comfy_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-            # 构建模型路径
-            model_dir = os.path.join(comfy_path, 
-                                   "models", 
-                                   "Janus-Pro",
-                                   os.path.basename(model_name))
-            if not os.path.exists(model_dir):
-                raise ValueError(f"Local model not found at {model_dir}. Please download the model and place it in the ComfyUI/models/Janus-Pro folder.")
-            model_path = model_dir
-        else:
-            model_path = model_name
+        # 获取ComfyUI根目录
+        comfy_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        # 构建模型路径
+        model_dir = os.path.join(comfy_path, 
+                               "models", 
+                               "Janus-Pro",
+                               os.path.basename(model_name))
+        if not os.path.exists(model_dir):
+            raise ValueError(f"Local model not found at {model_dir}. Please download the model and place it in the ComfyUI/models/Janus-Pro folder.")
             
-        vl_chat_processor = VLChatProcessor.from_pretrained(model_path)
+        vl_chat_processor = VLChatProcessor.from_pretrained(model_dir)
         
         vl_gpt = AutoModelForCausalLM.from_pretrained(
-            model_path,
+            model_dir,
             trust_remote_code=True
         )
         

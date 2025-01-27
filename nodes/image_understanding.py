@@ -1,3 +1,7 @@
+import torch
+import numpy as np
+from PIL import Image
+
 class JanusImageUnderstanding:
     @classmethod
     def INPUT_TYPES(s):
@@ -24,11 +28,27 @@ class JanusImageUnderstanding:
         except ImportError:
             raise ImportError("Please install Janus using 'pip install -r requirements.txt'")
 
-        if image.shape[0] == 1:
-            image = image[0]
-        image = (image * 255).cpu().numpy().astype(np.uint8)
-        image = image.transpose(1, 2, 0)
-        pil_image = Image.fromarray(image)
+        # 打印初始图像信息
+        # print(f"Initial image shape: {image.shape}")
+        # print(f"Initial image type: {image.dtype}")
+        # print(f"Initial image device: {image.device}")
+
+        # ComfyUI中的图像格式是 BCHW (Batch, Channel, Height, Width)
+        if len(image.shape) == 4:  # BCHW format
+            if image.shape[0] == 1:
+                image = image.squeeze(0)  # 移除batch维度，现在是 [H, W, C]
+        
+        # print(f"After squeeze shape: {image.shape}")
+        
+        # 确保值范围在[0,1]之间并转换为uint8
+        image = (torch.clamp(image, 0, 1) * 255).cpu().numpy().astype(np.uint8)
+        
+        # print(f"Final numpy shape: {image.shape}")
+        # print(f"Final numpy dtype: {image.dtype}")
+        # print(f"Final value range: [{image.min()}, {image.max()}]")
+        
+        # 转换为PIL图像
+        pil_image = Image.fromarray(image, mode='RGB')
 
         conversation = [
             {
