@@ -13,7 +13,7 @@ ComfyUI nodes for Janus-Pro, a unified multimodal understanding and generation f
 1. Clone this repository to your ComfyUI's custom_nodes folder:
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/your-username/ComfyUI-Janus-Pro
+git clone https://github.com/CY-CHENYUE/ComfyUI-Janus-Pro
 ```
 
 2. Install the required dependencies:
